@@ -60,9 +60,9 @@ def render(initial_random_board):
         print("\n|", end="")
         for j in range(0, len(initial_random_board[0])):
             if initial_random_board[i][j] == 0:
-                current_row.append("-")
+                current_row.append(".")
             else:
-                current_row.append("+")
+                current_row.append("#")
         #[print(k, end = " ") for k in current_row]
         print("".join(current_row) + "|")
         rendered_initial_board.append(current_row)
@@ -117,6 +117,37 @@ def cell_assignment_Moore(new_board, x, y):
             new_board[x][y] = 1
         else:
             new_board[x][y] = 0
+
+def cell_assignment_vonNeumann(new_board, x, y, r):
+    # We wanna iterate around each cell and check the different conditions. Make note of the surrounding cells' states and add them up for further evaluation
+    # I'm not sure how to code the ones for a r > 1 because I don't fully understand Manhattan Distance and extended von Neumann neighborhoods yet or can't find a good explanation of it online
+    if r == 1:
+        sum = 0
+        for x1 in range(x-1, (x+1)+1):
+            if x1 < 0 or x1 >= len(new_board):
+                continue
+            if x1 == x:
+                continue
+            sum += new_board[x1][y]
+        for y1 in range(y-1, (y+1)+1):
+            if y1 < 0 or y1 >= len(new_board[0]):
+                continue
+            if y1 == y:
+                continue
+            sum += new_board[x][y1]
+
+        if new_board[x][y] == 1:
+            if sum <= 1:
+                new_board[x][y] = 0
+            elif sum <= 3:
+                new_board[x][y] = 1
+            else:
+                new_board[x][y] = 0
+        else:
+            if sum == 3:
+                new_board[x][y] = 1
+            else:
+                new_board[x][y] = 0
 
 def next_board_state(initial_board_state):
     '''
@@ -248,32 +279,43 @@ def next_board_state(initial_board_state):
 def run_forever(starting_state):
     next_state = starting_state
     while(True):
-        render(next_board_state(next_state))
+        render(next_state)
+        '''
+        g = []
+        print("_________________________")
+        for i in next_state:
+            current_row = []
+            for j in range(0, len(next_state[0])):
+                current_row.append(int(i[j]))
+            print(current_row)
+            g.append(current_row)
+        '''
+        next_state = next_board_state(next_state)
         time.sleep(0.05)
 
 #run_forever(random_state(10,10))
 
 def run_file(input_file):
+    '''
     starting_conditions = []
     with open(input_file, 'r') as f:
         while f.readline() != "":
             starting_conditions.append(f.readline().strip())
             print(starting_conditions)
     '''
-    new_starting_conditions = []
-    for i in range(0, len(starting_conditions)):
-        if len(starting_conditions[i]) > 1:
-            new_starting_conditions.append(starting_conditions[i])
-    print(new_starting_conditions)
+    with open(input_file, 'r') as f:
+        contents = f.readlines()
+    starting_conditions = contents
 
+    for i in range(0, len(starting_conditions)):
+        starting_conditions[i] = starting_conditions[i][:len(starting_conditions[i])-1]
     official_starting_conditions = []
-    for i in new_starting_conditions:
+    for i in starting_conditions:
         current_row = []
-        for j in range(0, len(new_starting_conditions[0])):
+        for j in range(0, len(starting_conditions[0])):
             current_row.append(int(i[j]))
         print(current_row)
         official_starting_conditions.append(current_row)
     run_forever(official_starting_conditions)
-    '''
 
-run_file("E:\\Python\\Projects\\Game of Life Simulation\\beacon.txt")
+run_file("E:\\Python\\Projects\\Game of Life Simulation\\toad.txt")
